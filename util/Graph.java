@@ -17,6 +17,40 @@ public class Graph<T> {
     nodeMap = new HashMap<>();
   }
 
+  //------------------------Translate Methods----------------------------//
+
+  public String translateOriginal() {
+    StringBuilder strBldr = new StringBuilder();
+    for (Map.Entry<T, Node<T>> entry : nodeMap.entrySet()) {
+      strBldr.append(entry.getValue());
+      strBldr.append(" ");
+      for (Node<T> adjNode : entry.getValue().getAdjacents()) {
+        strBldr.append(adjNode.getValue());
+        strBldr.append(" ");
+      }
+      strBldr.append("\n");
+    }
+    return strBldr.toString();
+  }
+
+  public String translateToString(T start, T end) {
+    StringBuilder strBldr = new StringBuilder();
+    strBldr.append(start);
+    strBldr.append(" ");
+    strBldr.append(end);
+    strBldr.append("\n");
+    for (Node<T> node : nodes) {
+      strBldr.append(node.getValue());
+      strBldr.append(" ");
+      for (Node<T> adjNode : node.getAdjacents()) {
+        strBldr.append(adjNode.getValue());
+        strBldr.append(" ");
+      }
+      strBldr.append("\n");
+    }
+    return strBldr.toString();
+  }
+
   //------------------------Old Methods----------------------------//
 
   public Set<T> getNodeValues() {
@@ -92,7 +126,7 @@ public class Graph<T> {
   }
 
   private Node<T> findOrConstructNode(Node<T> node) {
-    System.out.println("Looking for " + node);
+    // System.out.println("Looking for " + node);
     if (node.isEntryNode()) {
       Node<T> found = findEntryNode(node.getValue());
       if (found != null) {
@@ -111,7 +145,7 @@ public class Graph<T> {
       }
     }
 
-    System.out.println("Creating " + node);
+    // System.out.println("Creating " + node);
     return addNode(node);
   }
 
@@ -132,7 +166,7 @@ public class Graph<T> {
         }
       }
     }
-    System.out.println("Graph#findEntryNode not found " + value);
+    // System.out.println("Graph#findEntryNode not found " + value);
     return null;
   }
 
@@ -144,7 +178,7 @@ public class Graph<T> {
         }
       }
     }
-    System.out.println("Graph#findExitNode not found " + value);
+    // System.out.println("Graph#findExitNode not found " + value);
     return null;
   }
 

@@ -3,11 +3,26 @@ package util;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.io.Writer;
+import java.io.BufferedWriter;
+import java.io.OutputStreamWriter;
+import java.io.FileOutputStream;
+
 
 public class APL {
 
+  static int decomposeCount = 0;
+
   public static <T> double[] compute(Graph<T> graph, T u, T v) {
     System.out.println("Graph: " + graph.toMapString());
+    String rep = graph.translateOriginal();
+    System.out.println(rep);
+    try (Writer writer = new BufferedWriter(new OutputStreamWriter(
+              new FileOutputStream("original.txt"), "utf-8"))) {
+      writer.write(rep);
+    } catch (Exception e) {
+      System.out.println("Not found!");
+    }
     Node<T> start = graph.getNode(u);
     Node<T> end = graph.getNode(v);
     
@@ -53,6 +68,17 @@ public class APL {
           if (!entryNode.equalValue(exitNode)) {
             Graph<T> subgraph = new Graph<>();
             List<Node<T>> nodes = makeSubgraph(subgraph, scc, entryNode, exitNode);
+            decomposeCount++;
+            if (decomposeCount % 2 == 0) {
+              String rep = subgraph.translateToString(entryNode.getValue(), exitNode.getValue());
+              System.out.println("String Representation\n" + rep);
+              try (Writer writer = new BufferedWriter(new OutputStreamWriter(
+                        new FileOutputStream("subgraph.txt"), "utf-8"))) {
+                writer.write(rep);
+              } catch (Exception e) {
+                System.out.println("Not found!");
+              }
+            }
             // add edge with value found in APL calculation
             double[] values = APL.computeHelper(subgraph, nodes.get(0), nodes.get(1));
             System.out.println("Values: " + values[0] + " " + values[1]);
