@@ -12,7 +12,6 @@ public class Node<T> {
   private T value;
   private boolean visited;
   private Map<Double, Double> distances;
-  // bad name, should be outEdges
   private List<Edge<T>> edges;
   private List<Node<T>> adjacents;
   private Set<Node<T>> adjacentSet;
@@ -25,9 +24,6 @@ public class Node<T> {
   private boolean isEntryNode;
   private boolean isExitNode;
 
-  /*
-    New fields
-  */
   // List of cross edges that leave this node
   private List<Edge<T>> crossOutEdges;
   // List of cross edges that enter this node
@@ -57,7 +53,7 @@ public class Node<T> {
 
   // Outgoing cross edges are identified after edges have been created,
   // so this method does not create a new edge, but rather keeps track
-  // of newly identified outgoing cross edge. 
+  // of newly identified outgoing cross edges. 
   public void addCrossOutgoing(Node<T> node, Edge<T> edge) {
     // Since there is an outgoing cross edge, this node is an exit node
     isExitNode = true;
@@ -171,7 +167,6 @@ public class Node<T> {
   public Edge<T> addSuperEdge(Node<T> node) {
     Edge<T> nEdge = new Edge(this, node, 1, 1);
     edges.add(nEdge);
-    // hasSuperEdge = true;
     return nEdge;
   }
 
@@ -207,7 +202,6 @@ public class Node<T> {
   // Does not remove inEdges record!
   public void removeIncomingAdjacent(Node<T> node) {
     incomingAdjacents.remove(node);
-    // O(n^2) removal
     for (Edge<T> edge : new ArrayList<>(inEdges)) {
       if (edge.getExitNode().equals(this)) {
         inEdges.remove(edge);
@@ -230,7 +224,6 @@ public class Node<T> {
   /**
    * Adds a length to the value to the map of nodes determined by the
    * distance to a destination
-   *
    */
   public void addDistance(double length) {
     if (distances.containsKey(length)) {
@@ -243,7 +236,6 @@ public class Node<T> {
   /**
    * Increments the values associated with the key (length)
    * for the mapping of path-length to occurrences.
-   *
    */
   public void addDistance(double length, double times) {
     distances.put(length, times);

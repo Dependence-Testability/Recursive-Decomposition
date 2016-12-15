@@ -39,8 +39,6 @@ public class SCC<T> {
       for (Edge<T> inEdge : node.getIncomingEdges()) {
         Node<T> inAdjNode = inEdge.getEntryNode();
         if (!nodes.contains(inAdjNode)) {
-          // System.out.println("Adding from compute");
-          // addEntryNode(node);
           node.setEntry(true);
           node.addCrossIncoming(inAdjNode, inEdge);
         }
@@ -64,20 +62,15 @@ public class SCC<T> {
     List<Node<T>> entryNodesToAdd = new ArrayList<>();
 
     for (Node<T> node : nodes) {
-      // System.out.println("node: " + node);
       // Node is entry/exit node, will be split
       // Original node is kept as entry node, split node will be exit node
       if (node.isEntryNode() && node.isExitNode()) {
-        // System.out.println("Entry and Exit");
         Node<T> exitNode = node.exitTransfer();
-        // addEntryNode(node);
         entryNodesToAdd.add(node);
         exitNodesToAdd.add(exitNode);
       } else if (!node.isEntryNode() && node.isExitNode()) {
-        // System.out.println("Exit");
         addExitNode(node);
       } else if (node.isEntryNode() && !node.isExitNode()) {
-        // System.out.println("Entry");
         addEntryNode(node);
       }
     }
@@ -88,7 +81,6 @@ public class SCC<T> {
 
     for (Node<T> node : exitNodesToAdd) {
       add(node);
-      // System.out.println("Adding from compute");
       addExitNode(node);
     }
 
@@ -115,7 +107,6 @@ public class SCC<T> {
   }
 
   public void addEntryNode(Node<T> node) {
-    // System.out.println("EntryNode: " + node);
     if (!entryNodes.contains(node)) {
       entryNodes.add(node);
       node.setEntry(true);
@@ -123,7 +114,6 @@ public class SCC<T> {
   }
 
   public void addExitNode(Node<T> node) {
-    // System.out.println("ExitNode: " + node);
     if (!exitNodes.contains(node)) {
       exitNodes.add(node);
       node.setExit(true);

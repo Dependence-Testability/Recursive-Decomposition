@@ -8,16 +8,11 @@ import java.util.Set;
 
 public class PathFinder {
 
-  // trial
   public static <T> double[] superDagTraversal(Graph<T> graph,
       Node<T> sNode, Node<T> eNode) {
-    System.out.println("Computing using Super Edges");
     List<Node<T>> dfsOrdered = dfsTopoSort(graph, sNode);
-    System.out.println("DFS Order: " + dfsOrdered);
     eNode.setVisited(true);
     calculateSuperPath(dfsOrdered, 0, sNode, eNode);
-    System.out.println("Values being returned: Num Of Paths " + sNode.getNumOfPaths() + " Total Length " +
-        sNode.getLengthOfPaths());
     return new double[]{sNode.getNumOfPaths(), sNode.getLengthOfPaths()};
   }
 
@@ -64,11 +59,9 @@ public class PathFinder {
     if (!curr.getVisited()) {
       curr.setVisited(true);
       for (int i = position + 1; i < sorted.size(); i++) {
-        // System.out.println("There is an edge between " + curr + " and " + sorted.get(i) + ": " + curr.hasEdge(sorted.get(i)));
         if (curr.hasEdge(sorted.get(i))) {
           Node<T> adj = sorted.get(i);
           calculateSuperPath(sorted, i, adj, end);
-          System.out.println("Nodes to look at next: " + curr + " " + adj);
 
           Edge<T> adjEdge = null;
           for (Edge<T> edge : curr.getEdges()) {
@@ -91,8 +84,6 @@ public class PathFinder {
 
           curr.setNumOfPaths(newNumPaths + currNumPaths);
           curr.setLengthOfPaths(newLenPaths + currLength);
-          System.out.println("Calculated num of paths: " + (totalNumPaths * originalNumPaths));
-          System.out.println("Calculated len of paths: " + ((totalNumPaths * originalLength) + (originalNumPaths * totalLength)));
         }
       }
     }

@@ -14,9 +14,7 @@ public class APL {
   static int decomposeCount = 0;
 
   public static <T> double[] compute(Graph<T> graph, T u, T v) {
-    System.out.println("Graph: " + graph.toMapString());
     String rep = graph.translateOriginal();
-    System.out.println(rep);
     try (Writer writer = new BufferedWriter(new OutputStreamWriter(
               new FileOutputStream("original.txt"), "utf-8"))) {
       writer.write(rep);
@@ -43,18 +41,15 @@ public class APL {
     System.out.println("Tarjan's Algorithm: " + tarjan);
     List<SCC<T>> sccs = tarjan.getSCCs();
 
-    // graph.size might no longer be a reliable way to tell sccs.size()
     if (sccs.size() == graph.size()) {
       return PathFinder.superDagTraversal(graph, u, v);
     } else {
-      // System.out.println("Constructing Supergraph");
       Graph<T> supergraph = new Graph<>();
       List<Node<T>> nodes = populateGraph(supergraph, sccs, u, v);
       u = nodes.get(0);
       v = nodes.get(1);
       System.out.println("SuperGraph: \n" + supergraph);
       decomposeGraph(supergraph, sccs, u, v);
-      // System.out.println("SuperGraph: \n" + supergraph);
       return PathFinder.superDagTraversal(supergraph, u, v);
     }
   }
@@ -63,15 +58,14 @@ public class APL {
     for (SCC<T> scc : sccs) {
       for (Node<T> entryNode : scc.getEntryNodes()) {
         for (Node<T> exitNode : scc.getExitNodes()) {
-          System.out.println("X Node: " + entryNode);
-          System.out.println("Y Node: " + exitNode);
           if (!entryNode.equalValue(exitNode)) {
+            System.out.println("X Node: " + entryNode);
+            System.out.println("Y Node: " + exitNode);
             Graph<T> subgraph = new Graph<>();
             List<Node<T>> nodes = makeSubgraph(subgraph, scc, entryNode, exitNode);
             decomposeCount++;
             if (decomposeCount % 2 == 0) {
               String rep = subgraph.translateToString(entryNode.getValue(), exitNode.getValue());
-              System.out.println("String Representation\n" + rep);
               try (Writer writer = new BufferedWriter(new OutputStreamWriter(
                         new FileOutputStream("subgraph.txt"), "utf-8"))) {
                 writer.write(rep);
@@ -84,11 +78,6 @@ public class APL {
             System.out.println("Values: " + values[0] + " " + values[1]);
             System.out.println("Adding super edge between " + entryNode + " and " + exitNode);
 
-            // split
-            // check if exit should be split
-            // if so, split, make edge between split parts, create edge between entry and new exit
-            // move cross edge to that new node
-            // else, add super edge
             Node<T> x = graph.findEntryNode(entryNode.getValue());
             Node<T> y = graph.findExitNode(exitNode.getValue());
             graph.addSuperEdge(entryNode, exitNode, values[0], values[1]);
@@ -106,15 +95,10 @@ public class APL {
     for (Node<T> node : scc.getNodes()) {
       if (!node.equals(y)) {
         for (Node<T> adjNode : node.getAdjacents()) {
-          System.out.println("Node: " + node + " adj: " + adjNode);
           if (scc.contains(adjNode) && !adjNode.equals(x)) {
-            if (node.equalValue(adjNode)) {
-              // do not add self (so it doesn't confuse path finder)? this might break supergraph??
-              // subgraph.addSuperEdge(node, adjNode, 1.0, 0.0);
-            } else {
-              System.out.println("Adding edge " + node + " - " + adjNode);
+            if (!node.equalValue(adjNode)) {
               subgraph.addEdge(node, adjNode); // adding edge will also create the nodes
-            }
+            } 
           }
         }
       }
@@ -148,12 +132,10 @@ public class APL {
 
       int i = 0;
       for (Node<T> entryNode : scc.getEntryNodes()) {
-        // System.out.println("Adding " + entryNode + " to the graph");
         Node<T> n = graph.addNode(entryNode);
       }
       int j = 0;
       for (Node<T> exitNode : scc.getExitNodes()) {
-        // System.out.println("Adding " + exitNode + " to the graph");
         Node<T> n = graph.addNode(exitNode);
       }
     }
@@ -166,7 +148,6 @@ public class APL {
     for (SCC<T> scc : sccs) {
       for (Node<T> exitNode : scc.getExitNodes()) {
         for (Node<T> adjNode : exitNode.getAdjacents()) {
-          // if (!scc.contains(adjNode) && graph.containsNode(adjNode.getValue())) {
           if (!scc.contains(adjNode)) {
             graph.addEdge(exitNode, adjNode);
           }

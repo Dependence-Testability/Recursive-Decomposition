@@ -87,7 +87,6 @@ public class Graph<T> {
     nNode.setEntry(node.isEntryNode());
     nNode.setExit(node.isExitNode());
     nodes.add(nNode);
-    System.out.println(nNode + " adj " + nNode.getAdjacents());
     return nNode;
   }
 
@@ -126,7 +125,6 @@ public class Graph<T> {
   }
 
   private Node<T> findOrConstructNode(Node<T> node) {
-    // System.out.println("Looking for " + node);
     if (node.isEntryNode()) {
       Node<T> found = findEntryNode(node.getValue());
       if (found != null) {
@@ -145,7 +143,6 @@ public class Graph<T> {
       }
     }
 
-    // System.out.println("Creating " + node);
     return addNode(node);
   }
 
@@ -166,7 +163,6 @@ public class Graph<T> {
         }
       }
     }
-    // System.out.println("Graph#findEntryNode not found " + value);
     return null;
   }
 
@@ -178,7 +174,6 @@ public class Graph<T> {
         }
       }
     }
-    // System.out.println("Graph#findExitNode not found " + value);
     return null;
   }
 
@@ -189,10 +184,6 @@ public class Graph<T> {
   public int size() {
     return nodes.size();
   }
-
-  // public boolean containsNode(T value) {
-  //   return nodeMap.containsKey(value);
-  // }
 
   public String toMapString() {
     StringBuilder strBldr = new StringBuilder();
