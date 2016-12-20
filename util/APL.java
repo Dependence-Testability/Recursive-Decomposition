@@ -7,14 +7,19 @@ import java.io.Writer;
 import java.io.BufferedWriter;
 import java.io.OutputStreamWriter;
 import java.io.FileOutputStream;
+import java.io.File;
+import java.util.Scanner;
+import java.io.FileReader;
 
 
 public class APL {
 
-  static int decomposeCount = 0;
+  private static int decomposeCount = 0;
+  private static final Object lock = new Object();
 
-  public static <T> double[] compute(Graph<T> graph, T u, T v) {
+  public static <T> double[] compute(Graph<T> graph, T u, T v, int presuffix, int trials) {
     String rep = graph.translateOriginal();
+    // System.out.println("Graph: " + graph);
     try (Writer writer = new BufferedWriter(new OutputStreamWriter(
               new FileOutputStream("original.txt"), "utf-8"))) {
       writer.write(rep);
@@ -27,18 +32,18 @@ public class APL {
     if (start == null || end == null) {
       throw new IllegalArgumentException();
     }
-    return compute(graph, start, end);
+    return compute(graph, start, end, presuffix, trials);
   }
 
-  public static <T> double[] compute(Graph<T> graph, Node<T> u, Node<T> v) {
-    double[] result = computeHelper(graph, u, v);
+  public static <T> double[] compute(Graph<T> graph, Node<T> u, Node<T> v, int presuffix, int trials) {
+    double[] result = computeHelper(graph, u, v, presuffix, trials);
     result[1] = result[1] / result[0];
     return result;
   }
 
-  public static <T> double[] computeHelper(Graph<T> graph, Node<T> u, Node<T> v) {
+  public static <T> double[] computeHelper(Graph<T> graph, Node<T> u, Node<T> v, int presuffix, int trials) {
     TarjanSCC<T> tarjan = new TarjanSCC<>(graph);
-    System.out.println("Tarjan's Algorithm: " + tarjan);
+    // System.out.println("Tarjan's Algorithm: " + tarjan);
     List<SCC<T>> sccs = tarjan.getSCCs();
 
     if (sccs.size() == graph.size()) {
@@ -48,39 +53,65 @@ public class APL {
       List<Node<T>> nodes = populateGraph(supergraph, sccs, u, v);
       u = nodes.get(0);
       v = nodes.get(1);
-      System.out.println("SuperGraph: \n" + supergraph);
-      decomposeGraph(supergraph, sccs, u, v);
+      // System.out.println("SuperGraph: \n" + supergraph);
+      decomposeGraph(supergraph, sccs, u, v, presuffix, trials);
       return PathFinder.superDagTraversal(supergraph, u, v);
     }
   }
 
-  private static <T> void decomposeGraph(Graph<T> graph, List<SCC<T>> sccs, Node<T> u, Node<T> v) {
+  private static <T> void decomposeGraph(Graph<T> graph, List<SCC<T>> sccs, Node<T> u, Node<T> v, int presuffix, int trials) {
     for (SCC<T> scc : sccs) {
       for (Node<T> entryNode : scc.getEntryNodes()) {
         for (Node<T> exitNode : scc.getExitNodes()) {
           if (!entryNode.equalValue(exitNode)) {
-            System.out.println("X Node: " + entryNode);
-            System.out.println("Y Node: " + exitNode);
+            // System.out.println("X Node: " + entryNode);
+            // System.out.println("Y Node: " + exitNode);
             Graph<T> subgraph = new Graph<>();
             List<Node<T>> nodes = makeSubgraph(subgraph, scc, entryNode, exitNode);
+            double[] result = new double[2];
             decomposeCount++;
             if (decomposeCount % 2 == 0) {
-              String rep = subgraph.translateToString(entryNode.getValue(), exitNode.getValue());
+              String rep = subgraph.translateToString(entryNode.getValue(), exitNode.getValue(), trials);
               try (Writer writer = new BufferedWriter(new OutputStreamWriter(
                         new FileOutputStream("subgraph.txt"), "utf-8"))) {
                 writer.write(rep);
+                File file = new File("results.txt");
+                while (!file.exists()) {
+                  synchronized(lock) {
+                    System.out.println("waiting");
+                    lock.wait(1000);
+                  }
+                }
+                Scanner in = new Scanner(new FileReader(file.getName()));
+                if (in.hasNext()) {
+                  result[0] = in.nextDouble();
+                  result[1] = in.nextDouble();
+                  // System.out.println(result[0] + " " + result[1]);
+                }
+                file.delete();
               } catch (Exception e) {
                 System.out.println("Not found!");
               }
+              // PairAndSetGenerator.startGeneration(presuffix, u.getValue(), v.getValue());
             }
-            // add edge with value found in APL calculation
-            double[] values = APL.computeHelper(subgraph, nodes.get(0), nodes.get(1));
-            System.out.println("Values: " + values[0] + " " + values[1]);
-            System.out.println("Adding super edge between " + entryNode + " and " + exitNode);
 
             Node<T> x = graph.findEntryNode(entryNode.getValue());
             Node<T> y = graph.findExitNode(exitNode.getValue());
-            graph.addSuperEdge(entryNode, exitNode, values[0], values[1]);
+
+            if (result[0] == 0.0d) {
+              graph.addSuperEdge(entryNode, exitNode, result[0], result[1]);
+            } else {
+              double[] values = APL.computeHelper(subgraph, nodes.get(0), nodes.get(1), presuffix, trials);
+              graph.addSuperEdge(entryNode, exitNode, values[0], values[1]);
+            }
+            // add edge with value found in APL calculation
+            // double[] values = APL.computeHelper(subgraph, nodes.get(0), nodes.get(1), presuffix, trials);
+            // // System.out.println("Values: " + values[0] + " " + values[1]);
+            // // System.out.println("Adding super edge between " + entryNode + " and " + exitNode);
+
+            // Node<T> x = graph.findEntryNode(entryNode.getValue());
+            // Node<T> y = graph.findExitNode(exitNode.getValue());
+            // graph.addSuperEdge(entryNode, exitNode, values[0], values[1]);
           }
         }
       }
@@ -104,7 +135,7 @@ public class APL {
       }
     }
 
-    System.out.println("Subgraph:\n" + subgraph);
+    // System.out.println("Subgraph:\n" + subgraph);
     Node<T> start = subgraph.findNode(x);
     Node<T> end = subgraph.findNode(y);
     if (start == null || end == null) {

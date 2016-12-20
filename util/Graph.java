@@ -22,29 +22,24 @@ public class Graph<T> {
   public String translateOriginal() {
     StringBuilder strBldr = new StringBuilder();
     for (Map.Entry<T, Node<T>> entry : nodeMap.entrySet()) {
-      strBldr.append(entry.getValue());
-      strBldr.append(" ");
+      strBldr.append(entry.getValue()).append(" ");
       for (Node<T> adjNode : entry.getValue().getAdjacents()) {
-        strBldr.append(adjNode.getValue());
-        strBldr.append(" ");
+        strBldr.append(adjNode.getValue()).append(" ");
       }
       strBldr.append("\n");
     }
     return strBldr.toString();
   }
 
-  public String translateToString(T start, T end) {
+  public String translateToString(T start, T end, int trial) {
     StringBuilder strBldr = new StringBuilder();
-    strBldr.append(start);
-    strBldr.append(" ");
-    strBldr.append(end);
-    strBldr.append("\n");
+    strBldr.append(trial).append("\n");
+    strBldr.append(start).append(" ").append(end).append("\n");
     for (Node<T> node : nodes) {
       strBldr.append(node.getValue());
       strBldr.append(" ");
       for (Node<T> adjNode : node.getAdjacents()) {
-        strBldr.append(adjNode.getValue());
-        strBldr.append(" ");
+        strBldr.append(adjNode.getValue()).append(" ");
       }
       strBldr.append("\n");
     }
